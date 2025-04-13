@@ -2,7 +2,6 @@ model_name= "Resume_working"
 
 
 
-
 from Agent import PkAgent
 from enviro import PkEnv
 from pathlib import Path
@@ -14,12 +13,13 @@ from pyboy import PyBoy
 
 # Function to find the latest checkpoint in the checkpoints directory
 def find_latest_checkpoint(save_dir):
-    all_checkpoints = list(save_dir.glob('**/pk_net_*.chkpt'))
+    all_checkpoints = list(save_dir.glob('**/pk_net_*.pt'))
     if all_checkpoints:
         return max(all_checkpoints, key=os.path.getmtime)
     return None
 
 pyboy = PyBoy("g1.gbc")
+pyboy.set_emulation_speed(2.0)
 with open("default.state", "rb") as f:
     pyboy.load_state(f)
 #pyboy = PyBoy("pinball.gbc",game_wrapper=False)
@@ -30,16 +30,11 @@ env=PkEnv(pyboy)
 #env=SkipFrame(env, skip=4)
 #env=FrameStack(env, num_stack=4)
 
-
-#use_cuda = torch.cuda.is_available()
-#print(f"Using CUDA: {use_cuda}")
-
-
 base_save_dir = Path("checkpoints")
 save_dir = base_save_dir / model_name #datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
 matrix_shape = (4, 16, 20)
-pk_agent = PkAgent(state_dim=matrix_shape, action_dim=env.action_space.n, save_dir=save_dir,env=env)
+pk_agent = PkAgent(state_dim=matrix_shape, action_dim=env.action_space.n, save_dir=save_dir,env=env,max_x=16,max_y=20)
 
 latest_checkpoint = find_latest_checkpoint(save_dir)
 
