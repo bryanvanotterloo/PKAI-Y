@@ -8,9 +8,7 @@ pyboy = PyBoy('g1.gbc')
 with open("default.state", "rb") as f:
     pyboy.load_state(f)
     
-pyboy.tick()
 
-pyboy.stop()
     
 locations = {
             0: "Pallet Town",
@@ -51,22 +49,33 @@ locations = {
         
 
 
-#t = 0
+t = 0
+locationsVisited = []
 
-#while pyboy.tick():
-#    t+=1
-#    if t == 100:
-#        t = 0
-#       mapLoc = locations[pyboy.memory[0xD35D]]
-#        p1_max_hp = pyboy.memory[0xD023:0xD024]
-#        battle_turn = pyboy.memory[0xD057]
-#        p1_cur_hp = pyboy.memory[0xD16C]
-#        p1_level = pyboy.memory[0xD18B]
-#        p1_id = pyboy.memory[0xD16A]
-#        battle_name = pyboy.memory[0xD008:0xD012]
-#        battle_name = "".join([chr(x - 63) for x in battle_name if x != 0x50])
-#        enemy_name = pyboy.memory[0xCFD9:0xCFE3]
-#        enemy_name = "".join([chr(x - 63) for x in enemy_name if x != 0x50])
-#        print(mapLoc,p1_max_hp,p1_cur_hp,p1_level,p1_id,battle_name,enemy_name)
-#    pass
-#pyboy.stop()
+while pyboy.tick(count=5,sound=False):
+    t+=1
+    if t == 100:
+        t = 0
+        mapLoc = locations[pyboy.memory[0xD35D]]
+        p1_max_hp = pyboy.memory[0xD023:0xD024]
+        battle_turn = pyboy.memory[0xD057]
+        p1_cur_hp = pyboy.memory[0xD16C]
+        p1_id = pyboy.memory[0xD16A]
+        all_lvls = sum(pyboy.memory[x] for x in [0xD18B, 0xD1B7, 0xD1E3, 0xD20F, 0xD23B, 0xD267])
+        ypos = pyboy.memory[0xD360]
+        xpos = pyboy.memory[0xD361]
+        curLoc = [pyboy.memory[0xD35D],xpos,ypos]
+        if curLoc not in locationsVisited:
+            locationsVisited.append(curLoc)
+        print(locationsVisited)
+        #battle_name = pyboy.memory[0xCFD9:0xCFE3]
+        #battle_name = "".join([chr(x-63) for x in battle_name if x != 0x50])
+        #enemy_name = pyboy.memory[0xD008:0xD012]
+        #print(enemy_name)
+        #enemy_name = "".join([chr(x-63) for x in enemy_name if x > 0])
+        print(mapLoc,all_lvls)
+    pass
+
+#with open("default.state", "wb") as f:
+#    pyboy.save_state(f)
+pyboy.stop()

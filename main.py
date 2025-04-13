@@ -67,12 +67,13 @@ while current_episode < episodes:
     # Play the game!
     while True:
 
+
+        
         # Run agent on the state
         action = pk_agent.get_action(obs)
 
         # Agent performs action
         next_obs, reward, terminated, truncated, info = env.step(action)
-        next_state, reward, done, truncated, info = env.step(action)
 
         # Remember
         #pokemon_pinball_agent.cache(state, next_state, action, reward, done)
@@ -85,14 +86,13 @@ while current_episode < episodes:
 
         # Update state
         obs = next_obs
-
         # Check if end of game
-        if done:
+        if terminated:
             print(env._fitness)
             break
 
     #logger.log_episode()
-
+    pk_agent.save(save_dir)
     #if (current_episode % 20 == 0) or (current_episode == episodes - 1):
     #    logger.record(episode=current_episode, epsilon=pokemon_pinball_agent.exploration_rate, step=pokemon_pinball_agent.curr_step)
     current_episode+=1

@@ -1,6 +1,7 @@
 from collections import defaultdict
 import gymnasium as gym
 import numpy as np
+import csv
 
 class PkAgent:
     def __init__(self, state_dim, action_dim, save_dir,env):
@@ -32,6 +33,19 @@ class PkAgent:
         self.final_epsilon = 0.1
 
         self.training_error = []
+
+    def load(self,f):
+        with open(f, "wb") as fi:
+            print(fi.read())
+
+        self.q_values = []
+
+    def save(self,dir):
+        with open(str(dir) + "pk_net_" + str(self.curr_episode) + ".chkpt", "wb") as f:
+            writer = csv.writer(f)
+            for k, v in self.q_values.items():
+                writer.writerow([k])
+
 
     def get_action(self, obs: tuple[int, int, bool]) -> int:
         """
