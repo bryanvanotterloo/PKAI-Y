@@ -125,4 +125,4 @@ class PkEnv(gym.Env):
             all_max_hp = 1
 #       battle_turn = pyboy.memory[0xD057]
 #       p1_cur_hp = pyboy.memory[0xD16C]
-        self._fitness=(all_cur_hp/all_max_hp*10) + (all_lvls * 10) + (len(self.locationsVisited) * 1) + (len(self.impLocVisited) * 50)
+        self._fitness=(all_cur_hp/all_max_hp*3) + (all_lvls * 5) + (len(self.locationsVisited) * 1) + (len(self.impLocVisited) * 10)

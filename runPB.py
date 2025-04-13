@@ -53,7 +53,7 @@ t = 0
 locationsVisited = []
 pyboy.set_emulation_speed(0)
 
-while pyboy.tick(sound=False):
+while pyboy.tick(count=5,sound=False):
     t+=1
     if t == 100:
         t = 0
