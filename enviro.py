@@ -7,8 +7,28 @@ import time
 import sys
 from PIL import Image
 from skimage.transform import resize
+from pyboy.utils import WindowEvent
 
-actions = ['','a', 'b', 'left', 'right', 'up', 'down']
+actions = [
+            WindowEvent.PRESS_ARROW_DOWN,
+            WindowEvent.PRESS_ARROW_LEFT,
+            WindowEvent.PRESS_ARROW_RIGHT,
+            WindowEvent.PRESS_ARROW_UP,
+            WindowEvent.PRESS_BUTTON_A,
+            WindowEvent.PRESS_BUTTON_B,
+        ]
+release_arrow = [
+            WindowEvent.RELEASE_ARROW_DOWN,
+            WindowEvent.RELEASE_ARROW_LEFT,
+            WindowEvent.RELEASE_ARROW_RIGHT,
+            WindowEvent.RELEASE_ARROW_UP
+        ]
+
+release_button = [
+            WindowEvent.RELEASE_BUTTON_A,
+            WindowEvent.RELEASE_BUTTON_B
+        ]
+#actions = ['','a', 'b', 'left', 'right', 'up', 'down']
 
 matrix_shape = (3,144,160)
 game_area_observation_space = spaces.Box(low=0.0, high=255, shape=matrix_shape, dtype=np.uint8)
@@ -42,14 +62,14 @@ class PkEnv(gym.Env):
 
     def __init__(self, maxlen):
         super().__init__()
-        self.head = "null" if False else 'SDL2'
+        self.head = "null" if True else 'SDL2'
         self.pyboy = PyBoy("g1.gbc",window=self.head)
         with open("default.state", "rb") as f:
             self.pyboy.load_state(f)
         if self.head == "null":
             self.pyboy.set_emulation_speed(0)
         else:
-            self.pyboy.set_emulation_speed(5.0)
+            self.pyboy.set_emulation_speed(0)
 
         
         self._fitness=0
@@ -73,8 +93,9 @@ class PkEnv(gym.Env):
 
 
     def step(self, action):
-        if action != 0:
-            self.pyboy.button(actions[action])
+        #if action != 0:
+        #    self.pyboy.button(actions[action])
+        self.pyboy.send_input(actions[action])
         #print(action)
 
         #self.pyboy.tick()
@@ -88,10 +109,22 @@ class PkEnv(gym.Env):
         obs = self.render()
         info = {}
         truncated = False
-        for i in range(10):
-            self.pyboy.tick()
+        for i in range(24):
+            if i == 8:
+                if action < 4:
+                    # release arrow
+                    self.pyboy.send_input(release_arrow[action])
+                if action > 3 and action < 6:
+                    # release button 
+                    self.pyboy.send_input(release_button[action - 4])
+                if actions[action] == WindowEvent.PRESS_BUTTON_START:
+                    self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_START)
+            if i % 8 and self.head !='null':
+                self.pyboy.tick(render=True,sound=False)
+            else:
+                self.pyboy.tick(render=False,sound=False)
         
-        return obs, reward, done, truncated, info
+        return obs, reward*0.1, done, truncated, info
 
 
     def reset(self, **kwargs):
@@ -149,10 +182,10 @@ class PkEnv(gym.Env):
         #all_stats = sum(self.pyboy.memory[x] for x in [0xD18C:0xD196, 0xD1B8:0xD1C1, 0xD1E4:0xD1ED, 0xD210:0xD219, 0xD23C:0xD245, 0xD268:D271])
 #       battle_turn = pyboy.memory[0xD057]
 #       p1_cur_hp = pyboy.memory[0xD16C]
-        self._fitness=(all_stats) + (all_lvls * 5) + (len(self.locationsVisited) * 1) + (len(self.impLocVisited) * 20) + (all_exp / 50)
+        self._fitness=(all_stats*20) + (all_lvls * 100) + (len(self.locationsVisited) * 150) + (len(self.impLocVisited) * 500) + (all_exp*100)
         if self._fitness - self._previous_fitness < -1:
             print("\rfitness went down by " + str(self._previous_fitness - self._fitness))
-        if self._fitness - self._previous_fitness > 1:
+        if self._fitness - self._previous_fitness > 200:
             print("\rfitness went up by " + str(self._fitness - self._previous_fitness))
         #print(self.step_count,self.max_steps)
         

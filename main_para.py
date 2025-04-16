@@ -35,7 +35,7 @@ if __name__ == '__main__':
     
     #episodes = 1000
     
-    ep_length = 2048*3
+    ep_length = 2048*4
     
     
     sess_path = Path(f'session_{str(uuid.uuid4())[:8]}')
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     print(sess_path)
     checkpoint_callback = CheckpointCallback(save_freq=ep_length, save_path=sess_path, name_prefix='poke')
 
-    learn_steps = 40
+    learn_steps = 200
     #input this for min session load
-    file_name = 'session_c2565952/poke_350208_steps' #'session_e41c9eff/poke_250871808_steps'
+    file_name = 'nsession_c2565952/poke_350208_steps' #'session_e41c9eff/poke_250871808_steps'
     
     if exists(file_name + '.zip'):
         print('\nloading checkpoint')
