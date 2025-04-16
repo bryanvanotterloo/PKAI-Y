@@ -18,8 +18,16 @@ def find_latest_checkpoint(save_dir):
         return max(all_checkpoints, key=os.path.getmtime)
     return None
 
-pyboy = PyBoy("g1.gbc")
+head = "null" if False else 'SDL2'
+
+pyboy = PyBoy("g1.gbc",window=head)
 pyboy.set_emulation_speed(2.0)
+maxFit = 0
+
+with open("bestSave/maxfit.txt", "r") as f:
+    maxFit = float(f.readline())
+print(maxFit)
+
 with open("default.state", "rb") as f:
     pyboy.load_state(f)
 #pyboy = PyBoy("pinball.gbc",game_wrapper=False)
@@ -39,6 +47,7 @@ pk_agent = PkAgent(state_dim=matrix_shape, action_dim=env.action_space.n, save_d
 latest_checkpoint = find_latest_checkpoint(save_dir)
 
 current_episode = 0
+current_epoch = 0
 
 if latest_checkpoint:
     print(f"Found latest checkpoint at {latest_checkpoint}. Resuming from this checkpoint.")
@@ -53,8 +62,10 @@ else:
 
 
 episodes = 100
+epochs = 40
 print("Starting from episode",current_episode)
 while current_episode < episodes:
+    
     print(current_episode)
     obs, info = env.reset()
     done = False
@@ -83,7 +94,13 @@ while current_episode < episodes:
         obs = next_obs
         # Check if end of game
         if terminated:
-            print(env._fitness)
+            print("{:<80}".format("\r" + str(env._fitness)))
+            if env._fitness > maxFit:
+                maxFit = env._fitness
+                with open("bestSave/bestSave.state", "wb") as f:
+                    pyboy.save_state(f)
+                with open("bestSave/maxfit.txt", "w") as f:
+                    f.write(str(maxFit))
             break
 
     #logger.log_episode()

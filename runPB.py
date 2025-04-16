@@ -3,13 +3,20 @@ from gymnasium import spaces
 import numpy as np
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
+from skimage.transform import resize
 
 pyboy = PyBoy('g1.gbc')
-with open("default.state", "rb") as f:
+#with open("default.state", "rb") as f:
+#    pyboy.load_state(f)
+    
+with open("bestSave/bestSave.state", "rb") as f:
     pyboy.load_state(f)
     
+maxfit = 0
 
-    
+with open("bestSave/maxfit.txt", "r") as f:
+    maxfit = float(f.readline())
+print(maxfit)
 locations = {
             0: "Pallet Town",
             1: "Viridian City",
@@ -53,7 +60,8 @@ t = 0
 locationsVisited = []
 pyboy.set_emulation_speed(0)
 
-while pyboy.tick(count=5,sound=False):
+while t < 10000:
+    pyboy.tick()
     t+=1
     if t == 100:
         t = 0
@@ -69,13 +77,21 @@ while pyboy.tick(count=5,sound=False):
         if curLoc not in locationsVisited:
             locationsVisited.append(curLoc)
         print(locationsVisited)
+        obs = pyboy.game_area()
+        obs = (255*resize(obs, (3,144,160))).astype(np.uint8)
         #battle_name = pyboy.memory[0xCFD9:0xCFE3]
         #battle_name = "".join([chr(x-63) for x in battle_name if x != 0x50])
         #enemy_name = pyboy.memory[0xD008:0xD012]
         #print(enemy_name)
         #enemy_name = "".join([chr(x-63) for x in enemy_name if x > 0])
-        print(mapLoc,all_lvls)
+        #all_cur_hp = sum(pyboy.memory[x] for x in [0xD16C, 0xD198, 0xD1C4, 0xD1F0, 0xD21C, 0xD248])
+        all_stats = sum(pyboy.memory[0xD18C:0xD196])
+        all_exp = sum(pyboy.memory[0xD179:0xD17B]) + sum(pyboy.memory[0xD1A5:0xD1A7]) + sum(pyboy.memory[0xD1D1:0xD1D3]) + sum(pyboy.memory[0xD1FD:0xD1FF]) + sum(pyboy.memory[0xD229:0xD22B]) + sum(pyboy.memory[0xD255:0xD257])
+        print(mapLoc,all_lvls,all_stats, "EXP:",all_exp)
     pass
+
+#with open("bestSave/maxfit.txt", "w") as f:
+#    f.write(str(maxfit + 1))
 
 #with open("default.state", "wb") as f:
 #    pyboy.save_state(f)
